@@ -11,10 +11,10 @@ import {
   Search,
   Globe,
   CheckCircle,
-  AlertTriangle,
-  XCircle
+  AlertTriangle
 } from "lucide-react";
 
+// Tabs config
 const tabs = [
   { id: "overview", label: "Overview", icon: BarChart3 },
   { id: "compliance", label: "Compliance", icon: Shield },
@@ -25,90 +25,92 @@ const tabs = [
   { id: "regional", label: "Regional", icon: Globe }
 ];
 
-const DemoSection = () => {
-  const [activeTab, setActiveTab] = useState("regional");
+// 🔹 Props from Index.tsx
+interface DemoSectionProps {
+  backendData: any | null;
+  onAnalyze: (url: string) => Promise<void>;
+}
+
+const DemoSection = ({ backendData, onAnalyze }: DemoSectionProps) => {
+  const [activeTab, setActiveTab] = useState("overview");
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleAnalyzeClick = async () => {
+    if (!url) return;
+    setLoading(true);
+    await onAnalyze(url);
+    setLoading(false);
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "overview":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-2xl font-semibold text-foreground mb-2 flex items-center gap-2">
-                <BarChart3 className="w-6 h-6 text-primary" />
-                Overview Dashboard
-              </h3>
-              <p className="text-muted-foreground">
-                Comprehensive dashboard with all KPIs consolidated and key performance metrics
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="text-center p-4">
-                <CardContent className="p-0">
-                  <div className="text-2xl font-bold text-primary mb-1">94</div>
-                  <div className="text-sm text-muted-foreground">Overall Score</div>
-                </CardContent>
-              </Card>
-              <Card className="text-center p-4">
-                <CardContent className="p-0">
-                  <div className="text-2xl font-bold text-success mb-1">2.3s</div>
-                  <div className="text-sm text-muted-foreground">Load Time</div>
-                </CardContent>
-              </Card>
-              <Card className="text-center p-4">
-                <CardContent className="p-0">
-                  <div className="text-2xl font-bold text-warning mb-1">12.4K</div>
-                  <div className="text-sm text-muted-foreground">Monthly Visits</div>
-                </CardContent>
-              </Card>
-              <Card className="text-center p-4">
-                <CardContent className="p-0">
-                  <div className="text-2xl font-bold text-primary mb-1">87%</div>
-                  <div className="text-sm text-muted-foreground">SEO Health</div>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <h4 className="text-lg font-semibold text-foreground mb-4">Performance Metrics</h4>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">First Contentful Paint</span>
-                    <span className="text-success font-medium">1.2s</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Largest Contentful Paint</span>
-                    <span className="text-warning font-medium">2.8s</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Cumulative Layout Shift</span>
-                    <span className="text-success font-medium">0.05</span>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <h4 className="text-lg font-semibold text-foreground mb-4">Quick Issues</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="w-4 h-4 text-success" />
-                    <span className="text-foreground">SSL Certificate Valid</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <AlertTriangle className="w-4 h-4 text-warning" />
-                    <span className="text-foreground">3 Accessibility Issues</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="w-4 h-4 text-success" />
-                    <span className="text-foreground">Mobile Responsive</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+  return (
+    <div className="space-y-6">
+      <h3 className="text-2xl font-semibold flex items-center gap-2">
+        <BarChart3 className="w-6 h-6 text-primary" /> Overview Dashboard
+      </h3>
 
+      {backendData ? (
+        <>
+          {/* 🔹 Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="text-center p-4">
+              <CardContent className="p-0">
+                <div className="text-2xl font-bold text-primary mb-1">
+                  {backendData?.stats?.word_count ?? "-"}
+                </div>
+                <div className="text-sm text-muted-foreground">Word Count</div>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-4">
+              <CardContent className="p-0">
+                <div className="text-2xl font-bold text-primary mb-1">
+                  {backendData?.stats?.headings?.length ?? 0}
+                </div>
+                <div className="text-sm text-muted-foreground">Headings Found</div>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-4">
+              <CardContent className="p-0">
+                <div className="text-2xl font-bold text-primary mb-1">
+                  {backendData?.stats?.images_without_alt?.length ?? 0}
+                </div>
+                <div className="text-sm text-muted-foreground">Images Missing Alt</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 🔹 Headings preview */}
+          <div className="mt-6">
+            <h4 className="text-lg font-semibold mb-2">Headings</h4>
+            <ul className="space-y-1">
+              {backendData?.stats?.headings?.slice(0, 10).map((h: any, i: number) => (
+                <li key={i} className="text-sm">
+                  <span className="font-mono">H{h.level}:</span> {h.text}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* 🔹 Text sample */}
+          <div className="mt-6">
+            <h4 className="text-lg font-semibold mb-2">Text Sample</h4>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+              {backendData?.stats?.text_sample ?? "No preview available"}
+            </p>
+          </div>
+        </>
+      ) : (
+        <p className="text-muted-foreground">
+          Run an analysis to see results here.
+        </p>
+      )}
+    </div>
+  );
       case "compliance":
         return (
           <div className="space-y-6">
@@ -572,43 +574,50 @@ const DemoSection = () => {
         return null;
     }
   };
-
   return (
     <section className="py-20 bg-muted/30" id="demo">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4">
-            See Web Optimizer in Action
-          </h2>
+          <h2 className="text-4xl font-bold mb-4">See Web Optimizer in Action</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Explore our analysis modules and see how we provide comprehensive insights into your website's performance.
+            Explore our analysis modules and see insights into your website's performance.
           </p>
         </div>
-        
+
         <div className="max-w-6xl mx-auto">
-          <Card className="border-border shadow-large">
-            {/* Tab Navigation */}
-            <div className="border-b border-border p-4">
-              <div className="flex flex-wrap gap-2">
-                {tabs.map((tab) => (
-                  <Button
-                    key={tab.id}
-                    variant={activeTab === tab.id ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setActiveTab(tab.id)}
-                    className="flex items-center gap-2"
-                  >
-                    <tab.icon className="w-4 h-4" />
-                    {tab.label}
-                  </Button>
-                ))}
-              </div>
+          <Card>
+            {/* 🔹 Single Global Input */}
+            <div className="flex gap-2 border-b border-border p-4">
+              <input
+                type="text"
+                placeholder="Enter website URL"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="flex-1 border rounded-lg px-3 py-2"
+              />
+              <Button onClick={handleAnalyzeClick} disabled={loading}>
+                {loading ? "Analyzing..." : "Analyze"}
+              </Button>
             </div>
-            
-            {/* Tab Content */}
-            <CardContent className="p-8">
-              {renderTabContent()}
-            </CardContent>
+
+            {/* 🔹 Tabs */}
+            <div className="border-b border-border p-4 flex flex-wrap gap-2">
+              {tabs.map((tab) => (
+                <Button
+                  key={tab.id}
+                  variant={activeTab === tab.id ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex items-center gap-2"
+                >
+                  <tab.icon className="w-4 h-4" />
+                  {tab.label}
+                </Button>
+              ))}
+            </div>
+
+            {/* 🔹 Tab Content */}
+            <CardContent className="p-8">{renderTabContent()}</CardContent>
           </Card>
         </div>
       </div>
